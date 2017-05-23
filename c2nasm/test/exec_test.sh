@@ -2,6 +2,7 @@
 
 
 test_clean(){
+  echo "[Info] Cleaning test files"
   rm -f hello.c.nasm
   rm -f hello.c.nasm.o  
   rm -f hello.c.o  
