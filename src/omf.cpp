@@ -716,14 +716,13 @@ void COMF::PublicNames(CMemoryBuffer * Strings, CSList<SStringEntry> * Index, in
    while (rec.GetNext());                        // End of loop through records
 }
 
-
 char * COMF::GetLocalName(uint32 i) {
    // Get section name or class name by name index
-   if (i == 0) return (char*)"null";
-   if (i < LocalNameOffset.GetNumEntries()) {
-      return NameBuffer.Buf() + LocalNameOffset[i];
-   }
-   return (char*)"?";
+    if (i == 0 || i >= LocalNameOffset.GetNumEntries())  {
+        i = NameBuffer.PushString("null");
+        return NameBuffer.Buf() + i;
+    }
+    return NameBuffer.Buf() + LocalNameOffset[i];
 }
 
 uint32 COMF::GetLocalNameO(uint32 i) {
@@ -845,7 +844,7 @@ char * SOMFRecordPointer::GetString() {
    // Read string and return as ASCIIZ string in static buffer
    static char String[256];
    uint8 Length = GetByte();
-   if (Length == 0) {
+   if (Length == 0 || Length >= sizeof(String)) {
       String[0] = 0;
    }
    else {
@@ -889,7 +888,7 @@ uint8 SOMFRecordPointer::GetNext(uint32 align) {
    Type2 = Type;  if (Type2 < OMF_LIBHEAD) Type2 &= ~1; // Make even
    uint16 RecordSize = GetWord();                // Get record size
    End = Index + RecordSize - 1;                 // Point to checksum byte
-   if (FileOffset + RecordSize + 3 > FileEnd) err.submit(2301); // Extends beyond end of file
+   if ((uint64)FileOffset + RecordSize + 3 > FileEnd) err.submit(2301); // Extends beyond end of file
    return Type2;
 }
 

@@ -516,6 +516,12 @@ void COMF2COF::MakeSections() {
                 Offset  = Records[RecNum].GetNumeric();// Read offset
                 Size    = Records[RecNum].End - Records[RecNum].Index; // Calculate size of data
                 LastDataRecord = RecNum;             // Save for later FIXUPP that refers to this record
+                
+                // Check if data within segment
+                if (Offset + Size > SegmentSize) {
+                    err.submit(2309, GetSegmentName(Segment));
+                    return;
+                }
 
                 if (Offset < LastOffset + LastDataRecordSize && LastOffset < Offset + Size) {
                     // Overlapping data records
@@ -534,11 +540,11 @@ void COMF2COF::MakeSections() {
                 LastDataRecordPointer = Records[RecNum].buffer + Records[RecNum].FileOffset + Records[RecNum].Index;
                 LastOffset = Offset;                 // Save offset for subsequent FIXUPP records
 
-                // Check if data within segment
+                /*// Check if data within segment
                 if (Offset + Size > SegmentSize) {
                     err.submit(2309, GetSegmentName(Segment));
                     continue;
-                }
+                } */
 
                 // Put raw data into temporary buffer
                 memcpy(TempBuf.Buf() + Offset, LastDataRecordPointer, Size);
@@ -557,7 +563,7 @@ void COMF2COF::MakeSections() {
                 Offset  = Records[RecNum].GetNumeric();// Read offset
 
                 if (Offset > SegmentSize) {
-                    err.submit(2310); continue;       // Error: outside bounds
+                    err.submit(2310); return;       // Error: outside bounds
                 }
 
                 // Unpack LIDATA blocks recursively

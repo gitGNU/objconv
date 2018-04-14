@@ -1,14 +1,14 @@
 /****************************  library.cpp  **********************************
 * Author:        Agner Fog
 * Date created:  2006-08-27
-* Last modified: 2013-09-01
+* Last modified: 2017-07-27
 * Project:       objconv
 * Module:        library.cpp
 * Description:
 * This module contains code for reading, writing and manipulating function
 * libraries (archives) of the UNIX type and OMF type.
 *
-* Copyright 2006-2013 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2006-2017 GNU General Public License http://www.gnu.org/licenses
 *****************************************************************************/
 
 #include "stdafx.h"
@@ -431,6 +431,8 @@ void CLibrary::RebuildOMF() {
     // Read library header
     DictionaryOffset = rec.GetDword();
     DictionarySize = rec.GetWord();
+    if ((uint64)DictionaryOffset + DictionarySize >= GetDataSize()) {err.submit(2035); return;}
+
     rec.GetByte(); // Ignore flag
     // Page size / alignment for members
     PageSize = rec.End + 1;
@@ -590,6 +592,7 @@ void CLibrary::DumpOMF() {
             // Read library header
             DictionaryOffset = rec.GetDword();
             DictionarySize = rec.GetWord();
+            if ((uint64)DictionaryOffset + DictionarySize >= GetDataSize()) {err.submit(2035); return;}
             Flags = rec.GetByte();
             // Page size / alignment for members
             PageSize = rec.End + 1;
@@ -942,7 +945,7 @@ char * CLibrary::ExtractMemberOMF(CFileBuffer * Destination) {
             CurrentOffset = rec.FileOffset;
 
             // Check name
-            if (MemberName[0] == 0) MemberName = (char*)"NoName!";
+            //!!if (MemberName[0] == 0) MemberName = (char*)"NoName!";
 
             // Return member name
             return MemberName;
@@ -1606,14 +1609,14 @@ void CLibrary::SortStringTable() {
             if (strcmp(s1,s2) == 0) {
                 // Duplicate found
                 // Compose error string "Modulename1 and Modulename2"
-                char ErrorModuleNames[64];
-                strcpy(ErrorModuleNames, GetModuleName(Table[i].Member));
-                strcpy(ErrorModuleNames + strlen(ErrorModuleNames), " and ");
-                strcpy(ErrorModuleNames + strlen(ErrorModuleNames), GetModuleName(Table[j].Member));
-                // submit error message
-                err.submit(1214, s1, ErrorModuleNames);
-                // Prevent excessive messages
-                i++;
+                uint32 errstring = LongNamesBuffer.GetDataSize();
+                LongNamesBuffer.PushString(GetModuleName(Table[i].Member));
+                LongNamesBuffer.SetSize(LongNamesBuffer.GetDataSize()-1); // remove terminating zero
+                LongNamesBuffer.Push(" and ", 5);
+                LongNamesBuffer.PushString(GetModuleName(Table[j].Member));
+                err.submit(1214, s1, (char*)LongNamesBuffer.Buf() + errstring);
+                LongNamesBuffer.SetSize(errstring);  // remove string again
+                i++;  // Prevent excessive messages
             }
             else {
                 break;

@@ -188,6 +188,9 @@ void CCOFF::ParseFile(){
    FileHeader = &Get<SCOFF_FileHeader>(FileHeaderOffset);
    NSections = FileHeader->NumberOfSections;
 
+   // check header integrity
+   if ((uint64)FileHeader->PSymbolTable + FileHeader->NumberOfSymbols * SIZE_SCOFF_SymTableEntry > GetDataSize()) err.submit(2035);
+
    // Find optional header if executable file
    if (FileHeader->SizeOfOptionalHeader && FileHeaderOffset) {
       OptionalHeader = &Get<SCOFF_OptionalHeader>(FileHeaderOffset + sizeof(SCOFF_FileHeader));
@@ -424,6 +427,7 @@ char const * CCOFF::GetSymbolName(int8* Symbol) {
    else {
       // Longer than 8 bytes. Get offset into string table
       uint32 offset = *(uint32*)(Symbol + 4);
+      if (offset >= StringTableSize || offset >= GetDataSize()) {err.submit(2035); return "";}
       char * s = StringTable + offset;
       if (*s) return s;               // Return string table entry
    }

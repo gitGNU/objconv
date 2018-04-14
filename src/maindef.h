@@ -1,7 +1,7 @@
 /****************************  maindef.h   **********************************
 * Author:        Agner Fog
 * Date created:  2006-08-26
-* Last modified: 2017-04-14
+* Last modified: 2018-01-29
 * Project:       objconv
 * Module:        maindef.h
 * Description:
@@ -13,7 +13,7 @@
 #define MAINDEF_H
 
 // Program version
-#define OBJCONV_VERSION         2.45
+#define OBJCONV_VERSION         2.49
 
 
 // Integer type definitions with platform-independent sizes:

@@ -1,7 +1,7 @@
 /****************************    elf.cpp    *********************************
 * Author:        Agner Fog
 * Date created:  2006-07-18
-* Last modified: 2016-11-06
+* Last modified: 2017-10-18
 * Project:       objconv
 * Module:        elf.cpp
 * Description:
@@ -9,7 +9,7 @@
 *
 * Class CELF is used for reading, interpreting and dumping ELF files.
 *
-* Copyright 2006-2016 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2006-2017 GNU General Public License http://www.gnu.org/licenses
 *****************************************************************************/
 #include "stdafx.h"
 // All functions in this module are templated to make two versions: 32 and 64 bits.
@@ -211,6 +211,17 @@ SIntTxt ELFMachineNames[] = {
    {EM_ALPHA,       "Alpha"}
 };
 
+// Program header type names
+SIntTxt ELFPTypeNames[] = {
+   {PT_NULL,        "Unused"},
+   {PT_LOAD,        "Loadable program segment"},
+   {PT_DYNAMIC,     "Dynamic linking information"},
+   {PT_INTERP,      "Program interpreter"},
+   {PT_NOTE,        "Auxiliary information"},
+   {PT_SHLIB,       "Reserved"},
+   {PT_PHDR,        "Entry for header table itself"}
+};
+
 
 // Class CELF members:
 // Constructor
@@ -230,6 +241,10 @@ void CELF<ELFSTRUCTURES>::ParseFile(){
    SectionHeaders.SetZero();
    uint32 Symtabi = 0;                  // Index to symbol table
 
+   // check header integrity
+   if (FileHeader.e_phoff > GetDataSize() || FileHeader.e_phoff + FileHeader.e_phentsize > GetDataSize()) err.submit(2035);
+   if (FileHeader.e_shoff > GetDataSize() || FileHeader.e_shoff + FileHeader.e_shentsize > GetDataSize()) err.submit(2035);
+
    // Find section headers
    SectionHeaderSize = FileHeader.e_shentsize;
    if (SectionHeaderSize <= 0) err.submit(2033);
@@ -237,6 +252,12 @@ void CELF<ELFSTRUCTURES>::ParseFile(){
 
    for (i = 0; i < NSections; i++) {
       SectionHeaders[i] = Get<TELF_SectionHeader>(SectionOffset);
+      // check section header integrity
+      if (SectionHeaders[i].sh_type != SHT_NOBITS && (SectionHeaders[i].sh_offset > GetDataSize() 
+          || SectionHeaders[i].sh_offset + SectionHeaders[i].sh_size > GetDataSize() 
+          || SectionHeaders[i].sh_offset + SectionHeaders[i].sh_entsize > GetDataSize())) {
+              err.submit(2035);
+      }
       SectionOffset += SectionHeaderSize;
       if (SectionHeaders[i].sh_type == SHT_SYMTAB) {
          // Symbol table found
@@ -274,6 +295,7 @@ void CELF<ELFSTRUCTURES>::ParseFile(){
 // Dump
 template <class TELF_Header, class TELF_SectionHeader, class TELF_Symbol, class TELF_Relocation>
 void CELF<ELFSTRUCTURES>::Dump(int options) {
+   uint32 i;
    if (options & DUMP_FILEHDR) {
       // File header
       printf("\nDump of ELF file %s", FileName);
@@ -293,6 +315,39 @@ void CELF<ELFSTRUCTURES>::Dump(int options) {
          FileHeader.e_version);
       printf("\nNumber of sections: %2i, Processor flags: 0x%X", 
          NSections, FileHeader.e_flags);
+   }
+
+   if ((options & DUMP_SECTHDR) && FileHeader.e_phnum) {      
+       // Dump program headers
+       uint32 nProgramHeaders = FileHeader.e_phnum;
+       uint32 programHeaderSize = FileHeader.e_phentsize;   
+       if (programHeaderSize <= 0) err.submit(2033);
+       uint32 programHeaderOffset = (uint32)FileHeader.e_phoff;
+       Elf64_Phdr pHeader;
+       for (i = 0; i < nProgramHeaders; i++) {
+           if (WordSize == 32) {
+               Elf32_Phdr pHeader32 = Get<Elf32_Phdr>(programHeaderOffset);
+               pHeader.p_type = pHeader32.p_type;
+               pHeader.p_offset = pHeader32.p_offset;
+               pHeader.p_vaddr = pHeader32.p_vaddr;
+               pHeader.p_paddr = pHeader32.p_paddr;
+               pHeader.p_filesz = pHeader32.p_filesz;
+               pHeader.p_memsz = pHeader32.p_memsz;
+               pHeader.p_flags = pHeader32.p_flags;
+               pHeader.p_align = pHeader32.p_align;
+           }
+           else {
+               pHeader = Get<Elf64_Phdr>(programHeaderOffset);
+           }
+           printf("\nProgram header Type: %s, flags 0x%X", 
+               Lookup(ELFPTypeNames, (uint32)pHeader.p_type), (uint32)pHeader.p_flags);
+           printf("\noffset = 0x%X, vaddr = 0x%X, paddr = 0x%X, filesize = 0x%X, memsize = 0x%X, align = 0x%X", 
+               (uint32)pHeader.p_offset, (uint32)pHeader.p_vaddr, (uint32)pHeader.p_paddr, (uint32)pHeader.p_filesz, (uint32)pHeader.p_memsz, (uint32)pHeader.p_align);
+           programHeaderOffset += programHeaderSize;
+           if (pHeader.p_filesz < 0x100 && (int32)pHeader.p_offset < GetDataSize() && memchr(Buf()+pHeader.p_offset, 0, (uint32)pHeader.p_filesz)) {
+               printf("\nContents: %s", Buf()+(int32)pHeader.p_offset);
+           }
+       }
    }
 
    if (options & DUMP_SECTHDR) {

@@ -1,13 +1,13 @@
 /****************************   error.cpp   **********************************
 * Author:        Agner Fog
 * Date created:  2006-07-15
-* Last modified: 2009-12-20
+* Last modified: 2017-10-18
 * Project:       objconv
 * Module:        error.cpp
 * Description:
 * Standard procedure for error reporting to stderr
 *
-* Copyright 2006-2009 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2006-2017 GNU General Public License http://www.gnu.org/licenses
 *****************************************************************************/
 
 // Define this if you get problems:
@@ -81,7 +81,7 @@ SErrorText ErrorTexts[] = {
    {1214, 1, "Symbol %s defined in both modules %s"},
    {1215, 1, "More than 251 blocks required in symbol hash table. May fail with some linkers"},
    {1300, 1, "File contains 32-bit absolute address. Must link with option -image_base %s -pagezero_size 1000"},
-   {1301, 1, "Image-relative address converted to absolute. Assumes image base = %s"},
+   {1301, 1, "Image-relative address converted to absolute. Assumes image base = "},
    {1302, 1, "64-bit relocation with arbitrary reference point converted to 32-bit self-relative. Will fail if offset is negative"},
    {1303, 1, "Cannot find imported symbol"},
    {1304, 1, "Unknown relocation address"},
@@ -251,9 +251,9 @@ void CErrorReporter::submit(int ErrorNumber, char const * extra) {
    // Print error message with extra text info
    // ErrorTexts[ErrorNumber] must contain %s where extra is to be inserted
    char text[MAX_ERROR_TEXT_LENGTH];
-   if (extra == 0) extra = "???";
    SErrorText * err = FindError(ErrorNumber);
-   sprintf(text, err->Text, extra);
+   strcpy (text, err->Text);
+   strncat( text, extra, MAX_ERROR_TEXT_LENGTH/2);
    HandleError(err, text);
 }
 

@@ -285,7 +285,7 @@ void CCOF2OMF::MakeRelocationsList() {
 
          // Find symbol table entry
          isym = Reloc.p->SymbolTableIndex;
-         if (isym >= NumberOfSymbols) {
+         if ((uint32)isym >= (uint32)NumberOfSymbols) {
             err.submit(2040);                    // SymbolTableIndex points outside Symbol Table
             isym = 0;
          }

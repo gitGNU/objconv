@@ -444,6 +444,9 @@ void CCOF2ASM::MakeExportList() {
    uint32 * pExportAddressTable = &Get<uint32>(expdir.FileOffset + ExportAddressTableOffset);
 
    // Find ExportNameTable
+   if (pExportDirectory->NamePointerTableRVA == 0) {
+       return;  // I don't know why this happens
+   }
    uint32 ExportNameTableOffset = pExportDirectory->NamePointerTableRVA - expdir.VirtualAddress;
    if (ExportNameTableOffset == 0 || ExportNameTableOffset >= expdir.MaxOffset) {
       // Points outside section

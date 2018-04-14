@@ -70,8 +70,8 @@ void CELF2ELF<ELFSTRUCTURES>::MakeSymbolTable() {
 
       case SHT_STRTAB:
          SecNamei = sheader.sh_name;
-         if (SecNamei >= this->SecStringTableLen) 
-            err.submit(2112);
+         if (SecNamei >= this->SecStringTableLen) {
+             err.submit(2112); return;}
          SectionName = this->SecStringTable + SecNamei;
          if (SectionNumber == this->FileHeader.e_shstrndx || !strcmp(SectionName,".shstrtab")) {
             istrtab[2] = SectionNumber;           // Section header string table found
@@ -282,7 +282,8 @@ void CELF2ELF<ELFSTRUCTURES>::ChangeSections() {
 
       // Section name
       namei = sheaderp->sh_name;
-      if (namei >= this->SecStringTableLen) err.submit(2112);
+      if (namei >= this->SecStringTableLen) {
+          err.submit(2112); sheaderp->sh_name = 0; return;}
       name1 = this->SecStringTable + namei;
 
       // Check if name change

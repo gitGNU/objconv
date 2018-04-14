@@ -40,7 +40,7 @@ void COMFHashTable::MakeHash(int8 * name) {
    uint16 BucketX;                               // Calculate block hash
    String = (uint8*)name;                        // Type cast string to unsigned char *
    StringLength = (uint32)strlen(name);
-   if (StringLength > 255) {
+   if (StringLength > 255 || StringLength == 0) {
       // String too long
       err.submit(1204, name);                    // Warning: truncating
       StringLength = 255;

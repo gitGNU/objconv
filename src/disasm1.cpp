@@ -3640,8 +3640,10 @@ void CDisassembler::FindWarnings() {
                 else if (Get<int16>(s.AddressField) == Get<int8>(s.AddressField)) s.Warnings1 |= 8; // Could use sign extension
                 break;
             case 4:  // 4 bytes displacement
-                if (Get<int32>(s.AddressField) == 0) s.Warnings1 |= 4; // Displacement is 0
-                else if (Get<int32>(s.AddressField) == Get<int8>(s.AddressField)) s.Warnings1 |= 8; // Could use sign extension
+                if (s.OpcodeDef->InstructionFormat != 0x1E) {
+                    if (Get<int32>(s.AddressField) == 0) s.Warnings1 |= 4; // Displacement is 0
+                    else if (Get<int32>(s.AddressField) == Get<int8>(s.AddressField)) s.Warnings1 |= 8; // Could use sign extension
+                }
                 break;
             case 8:  // 8 bytes displacement
                 if (Get<int32>(s.AddressField) == Get<int64>(s.AddressField)) 
@@ -3653,7 +3655,7 @@ void CDisassembler::FindWarnings() {
     // Check for unnecessary SIB byte
     if ((s.MFlags&4) && (s.BaseReg&7)!=4+1 && (s.IndexReg==0 || (s.BaseReg==0 && s.Scale==0))) {
         if (WordSize == 64 && s.BaseReg==0 && s.IndexReg==0) s.Warnings1 |= 0x4000; // 64-bit address not rip-relative
-        else if ((s.Operands[0] & 0xFF) != 0x98 && (s.Operands[1] & 0xFF) != 0x98) { // ignore if bounds register used
+        else if ((s.Operands[0] & 0xFF) != 0x98 && (s.Operands[1] & 0xFF) != 0x98 && s.OpcodeDef->InstructionFormat != 0x1E) { // ignore if bounds register used or vsib
             s.Warnings1 |= 0x10; // Unnecessary SIB byte
         }
     }
