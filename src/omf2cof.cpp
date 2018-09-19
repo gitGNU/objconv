@@ -1,13 +1,13 @@
 /****************************  omf2cof.cpp   *********************************
 * Author:        Agner Fog
 * Date created:  2007-02-08
-* Last modified: 2013-10-16
+* Last modified: 2018-08-15
 * Project:       objconv
 * Module:        omf2cof.cpp
 * Description:
 * Module for converting OMF file to PE/COFF file
 *
-* Copyright 2007-2013 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2007-2018 GNU General Public License http://www.gnu.org/licenses
 *****************************************************************************/
 #include "stdafx.h"
 
@@ -733,6 +733,10 @@ void COMF2COF::MakeSections() {
                         case 2: // T2 and T6: Target = external symbol
 
                             // Translate old EXTDEF index to new symbol table index
+                            if (Target >= ExtdefTranslation.GetNumEntries()) {
+                                Target = 0; err.submit(2312);
+                                continue;
+                            }
                             rel.SymbolTableIndex = ExtdefTranslation[Target];
 
                             // Put addend inline in new file

@@ -1,7 +1,7 @@
 /****************************    omf.cpp    *********************************
 * Author:        Agner Fog
 * Date created:  2007-01-29
-* Last modified: 2009-07-17
+* Last modified: 2018-05-26
 * Project:       objconv
 * Module:        omf.cpp
 * Description:
@@ -9,7 +9,7 @@
 *
 * Class COMF is used for reading, interpreting and dumping OMF files.
 *
-* Copyright 2007-2009 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2007-2018 GNU General Public License http://www.gnu.org/licenses
 *****************************************************************************/
 #include "stdafx.h"
 
@@ -844,7 +844,7 @@ char * SOMFRecordPointer::GetString() {
    // Read string and return as ASCIIZ string in static buffer
    static char String[256];
    uint8 Length = GetByte();
-   if (Length == 0 || Length >= sizeof(String)) {
+   if (Length == 0 /*|| Length >= sizeof(String)*/) {
       String[0] = 0;
    }
    else {
