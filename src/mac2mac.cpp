@@ -136,6 +136,9 @@ void CMAC2MAC<MACSTRUCTURES>::MakeSymbolTable() {
    }
 
    // Put everything into symbol table and string table
+   if (this->SymTabNumber) {
+      NewStringTable.SetDataSize(1); // First record must indicate empty string (see nlist.n_un in Mach-O File Format Reference)
+   }
    for (NewScope = 0; NewScope < 3; NewScope++) {
       NewSymbols[NewScope].SortList();  // Sort each list alphabetically
       NewSymbols[NewScope].StoreList(&NewSymbolTable, &NewStringTable);
