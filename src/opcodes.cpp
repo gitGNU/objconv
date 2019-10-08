@@ -1,13 +1,13 @@
 /****************************    opcodes.cpp    *******************************
 * Author:        Agner Fog
 * Date created:  2007-02-21 
-* Last modified: 2017-04-14
+* Last modified: 2018-10-08
 * Project:       objconv
 * Module:        opcodes.cpp
 * Description:
 * Definition of opcode maps used by disassembler
 *
-* Copyright 2007-2017 GNU General Public License http://www.gnu.org/licenses
+* Copyright 2007-2018 GNU General Public License http://www.gnu.org/licenses
 *****************************************************************************/
 
 
@@ -2351,7 +2351,7 @@ SOpcodeDef OpcodeMap58[3] = {
 //  name         instset prefix   format  dest.   source1 source2 source3 EVEX    MVEX    link    options
    {"movd",      0x7   , 0x11200, 0x12  , 0x1103, 0x3   , 0     , 0     , 0x00  , 0     , 0     , 0x2   },    // 0F 6E
    {"movd",      0x7   , 0x11200, 0x12  , 0x1103, 0x3   , 0     , 0     , 0x00  , 0     , 0     , 0x2   },    // 0F 6E
-   {"movq",      0x4000, 0x11200, 0x12  , 0x1404, 0x4   , 0     , 0     , 0x00  , 0     , 0     , 0x2   }};   // 0F 6E. Name varies: movd or movq, though the operand is 64 bits
+   {"movq",      0x4000, 0x11200, 0x12  , 0x1104, 0x4   , 0     , 0     , 0x00  , 0     , 0     , 0x2   }};   // 0F 6E. Name varies: movd or movq, though the operand is 64 bits
 
 // Tertiary opcode map for movd/movq. Opcode byte = 0F 7E
 // Indexed by prefix: none/66/F2/F3
