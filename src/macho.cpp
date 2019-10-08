@@ -585,21 +585,20 @@ void MacSymbolTableBuilder<TMAC_nlist, MInt>::SortList() {
 
    MacSymbolRecord<TMAC_nlist> * p = (MacSymbolRecord<TMAC_nlist>*)Buf();     // Point to list
 
-   // Simple Bubble sort:
-   int i, j;  const char * s1, * s2;
-   MacSymbolRecord<TMAC_nlist> temp;
-   for (i = 0; i < (int)GetNumEntries(); i++) {
-      for (j = 0; j < (int)GetNumEntries() - i - 1; j++) {
-         s1 = StringBuffer.Buf() + p[j].Name;
-         s2 = StringBuffer.Buf() + p[j+1].Name;
-         if (strcmp(s1, s2) > 0) {
-            // Swap records
-            temp = p[j];
-            p[j] = p[j+1];
-            p[j+1] = temp;
+   // Simple Shell sort with Sedgewick gaps:
+   int i, j, k, gap, n = (int)GetNumEntries();
+   for (k = 15; k >= 0; k--) {
+      gap = (1 << 2 * k) | (3 << k >> 1) | 1;   // Sedgewick gap grants O(N^4/3) 
+      for (i = gap; i < n; i++) {
+         MacSymbolRecord<TMAC_nlist> key = p[i];
+         char * strkey = StringBuffer.Buf() + key.Name;
+         for (j = i - gap; j >= 0 && strcmp(strkey, StringBuffer.Buf() + p[j].Name) < 0; j -= gap) {
+            p[j + gap] = p[j];
          }
+         p[j + gap] = key;
       }
    }
+
    sorted = 1;
 }
 
