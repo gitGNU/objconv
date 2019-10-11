@@ -1382,9 +1382,11 @@ char * CLibrary::StripMemberName(char * name) {
             p1 = name + i + 1; break;
         }
     }
+    len -= i + 1;
+
     // move to begin of buffer
     if (p1 > name) {
-        strcpy(name, p1);
+        memmove(name, p1, len + 1);
     }
         
     // Get file type
@@ -1409,7 +1411,6 @@ char * CLibrary::StripMemberName(char * name) {
     }
 
     // find extension
-    len = (int)strlen(name);
     for (nlen = len-1; nlen >= 0; nlen--) {
         if (name[nlen] == '.') {
             break;
@@ -1417,7 +1418,6 @@ char * CLibrary::StripMemberName(char * name) {
     }
 
     // Remove any spaces or other illegal characters
-    len = (int)strlen(name);
     for (i = 0; i < nlen; i++) {
         if ((uint8)name[i] <= 0x20 || name[i] == '.') name[i] = '_';
     }
