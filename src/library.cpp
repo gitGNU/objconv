@@ -2085,7 +2085,7 @@ const char * CLibrary::GetModuleName(uint32 Index) {
                 // Long name in longnames record
                 uint32 NameIndex = atoi(name+1);
                 if (NameIndex < LongNamesSize) {
-                    return Buf() + LongNames + NameIndex;
+                    return LongNamesBuffer.Buf() + NameIndex;
                 }
                 else {
                     return "?";
