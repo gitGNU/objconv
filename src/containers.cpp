@@ -157,15 +157,18 @@ uint32 CMemoryBuffer::GetLastIndex() {
     return NumEntries - 1;
 }
 
-void CMemoryBuffer::Align(uint32 a) {
-    // Align next entry to address divisible by a
-    uint32 NewOffset = (DataSize + a - 1) / a * a;
-    if (NewOffset > BufferSize) {
+void CMemoryBuffer::SetDataSize(uint32 size) {
+    if (size > BufferSize) {
         // Allocate more space
-        SetSize (NewOffset + 2048);
+        SetSize(size + 2048);
     }
     // Set DataSize to after alignment space
-    DataSize = NewOffset;
+    DataSize = size;
+}
+
+void CMemoryBuffer::Align(uint32 a) {
+    // Align next entry to address divisible by a
+    SetDataSize((DataSize + a - 1) / a * a);
 }
 
 // Members of class CFileBuffer

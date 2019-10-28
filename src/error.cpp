@@ -234,7 +234,7 @@ void CErrorReporter::submit(int ErrorNumber, int extra) {
    // ErrorTexts[ErrorNumber] must contain %i where extra is to be inserted
    char text[MAX_ERROR_TEXT_LENGTH];
    SErrorText * err = FindError(ErrorNumber);
-   sprintf(text, err->Text, extra);
+   snprintf(text, MAX_ERROR_TEXT_LENGTH, err->Text, extra);
    HandleError(err, text);
 }
 
@@ -243,7 +243,7 @@ void CErrorReporter::submit(int ErrorNumber, int extra1, int extra2) {
    // ErrorTexts[ErrorNumber] must contain two %i fields where extra numbers are to be inserted
    char text[MAX_ERROR_TEXT_LENGTH];
    SErrorText * err = FindError(ErrorNumber);
-   sprintf(text, err->Text, extra1, extra2);
+   snprintf(text, MAX_ERROR_TEXT_LENGTH, err->Text, extra1, extra2);
    HandleError(err, text);
 }
 
@@ -252,8 +252,7 @@ void CErrorReporter::submit(int ErrorNumber, char const * extra) {
    // ErrorTexts[ErrorNumber] must contain %s where extra is to be inserted
    char text[MAX_ERROR_TEXT_LENGTH];
    SErrorText * err = FindError(ErrorNumber);
-   strcpy (text, err->Text);
-   strncat( text, extra, MAX_ERROR_TEXT_LENGTH/2);
+   snprintf(text, MAX_ERROR_TEXT_LENGTH, err->Text, extra);
    HandleError(err, text);
 }
 
@@ -263,7 +262,7 @@ void CErrorReporter::submit(int ErrorNumber, char const * extra1, char const * e
    char text[MAX_ERROR_TEXT_LENGTH];
    if (extra1 == 0) extra1 = "???"; if (extra2 == 0) extra2 = "???";
    SErrorText * err = FindError(ErrorNumber);
-   sprintf(text, err->Text, extra1, extra2);
+   snprintf(text, MAX_ERROR_TEXT_LENGTH, err->Text, extra1, extra2);
    HandleError(err, text);
 }
 
@@ -273,7 +272,7 @@ void CErrorReporter::submit(int ErrorNumber, int extra1, char const * extra2) {
    char text[MAX_ERROR_TEXT_LENGTH];
    if (extra2 == 0) extra2 = "???";
    SErrorText * err = FindError(ErrorNumber);
-   sprintf(text, err->Text, extra1, extra2);
+   snprintf(text, MAX_ERROR_TEXT_LENGTH, err->Text, extra1, extra2);
    HandleError(err, text);
 }
 

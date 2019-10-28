@@ -121,6 +121,7 @@ public:
    void ReadCommandLine(int argc, char * argv[]);     // Read and interpret command line
    int  SymbolChange(char const * oldname, char const ** newname, int symtype); // Check if symbol has to be changed
    int  SymbolIsInList(char const * name);   // Check if symbol is in SymbolList
+   int  SymbolBinSearch(char const * name, int nsym, int * found);
    int  SymbolChangesRequested();            // Any kind of symbol change requested on command line
    void ReportStatistics();                  // Report statistics about name changes etc.
    void CountDebugRemoved();                 // Increment CountDebugSectionsRemoved
@@ -167,7 +168,8 @@ protected:
    CArrayBuf<CFileBuffer> ResponseFiles;     // Array of up to 10 response file buffers
    int NumBuffers;                           // Number of response file buffers
    int SymbolChangeEntries;                  // Number of entries in SymbolList, except library entries
-   CMemoryBuffer SymbolList;                 // List of symbol names to change. Contains entries of type SSymbolChange
+   CMemoryBuffer SymbolList;                 // List of symbol names to change. Contains entries of type SSymbolChange. Kept in sorted order
+   CMemoryBuffer PrefixSuffixList;           // List of prefix/suffix to change. Contains entries of type SSymbolChange
    CMemoryBuffer MemberNames;                // Buffer containing truncated member names
    uint32 MemberNamesAllocated;              // Size of buffer in MemberNames
    uint32 CurrentSymbol;                     // Pointer into SymbolList
