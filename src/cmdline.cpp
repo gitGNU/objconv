@@ -150,6 +150,16 @@ void CCommandLineInterpreter::ReadCommandItem(char * string) {
         // No prefix found. This is an input or output file name
         InterpretFileName(string);
     }
+
+    int loc, last = SymbolList.GetNumEntries() - 1;
+    if (last > 0) {
+        // relocate last entry (binary insertion sort):
+        SSymbolChange * List = (SSymbolChange *)SymbolList.Buf();
+        SSymbolChange key = List[last];
+        SymbolBinSearch(key.Name1, last, &loc);
+        memmove(List + loc + 1, List + loc, (last - loc) * sizeof(SSymbolChange));
+        List[loc] = key;
+    }
 }
 
 
@@ -705,7 +715,7 @@ void CCommandLineInterpreter::InterpretSymbolNameChangeOption(char * string) {
         sym.Name2 = name2;
         sym.Action  = SYMA_CHANGE_PREFIX;
         if (string[0] == 'a') sym.Action |= SYMA_ALIAS;
-        SymbolList.Push(&sym, sizeof(sym));  SymbolChangeEntries++;
+        PrefixSuffixList.Push(&sym, sizeof(sym));  SymbolChangeEntries++;
         break;
 
     case 's': case 'S':  // suffix replace option
@@ -717,7 +727,7 @@ void CCommandLineInterpreter::InterpretSymbolNameChangeOption(char * string) {
         sym.Name2 = name2;
         sym.Action  = SYMA_CHANGE_SUFFIX;
         if (string[0] == 'a') sym.Action |= SYMA_ALIAS;
-        SymbolList.Push(&sym, sizeof(sym));  SymbolChangeEntries++;
+        PrefixSuffixList.Push(&sym, sizeof(sym));  SymbolChangeEntries++;
         break;
 
     case 'w': case 'W':  // Weaken symbol
@@ -849,13 +859,27 @@ void CCommandLineInterpreter::CheckSymbolModifySuccess() {
 
 int CCommandLineInterpreter::SymbolIsInList(char const * name) {
     // Check if name is already in symbol list
-    int isym, nsym = SymbolList.GetNumEntries();
-    SSymbolChange * List = (SSymbolChange *)SymbolList.Buf(), * psym;
+    int unused;
+    return SymbolBinSearch(name, SymbolList.GetNumEntries(), &unused);
+}
 
-    // Search for name in list of names specified by user on command line
-    for (isym = 0, psym = List; isym < nsym; isym++, psym++) {
-        if (strcmp(name, psym->Name1) == 0) return 1;  // Matching name found
+
+int CCommandLineInterpreter::SymbolBinSearch(char const * name, int nsym, int * location) {
+    SSymbolChange * List = (SSymbolChange *)SymbolList.Buf();
+    int lo = 0, hi = nsym - 1;
+    while (lo <= hi) {
+        int mid = (lo + hi) >> 1;
+        int comp = strcmp(name, List[mid].Name1);
+        if (!comp) {
+            *location = mid;
+            return 1;
+        } else if (comp < 0) {
+            hi = mid - 1;
+        } else {
+            lo = mid + 1;
+        }
     }
+    *location = lo;
     return 0;
 }
 
@@ -864,6 +888,7 @@ int CCommandLineInterpreter::SymbolChange(char const * oldname, char const ** ne
     // Check if symbol has to be changed
     int action = 0, i, isym;
     int nsym = SymbolList.GetNumEntries();
+    int n_prefix_suffix = PrefixSuffixList.GetNumEntries();
     if (oldname == 0) return SYMA_NOCHANGE;
     if (newname) *newname = 0;
 
@@ -895,21 +920,29 @@ int CCommandLineInterpreter::SymbolChange(char const * oldname, char const ** ne
     }
 
     // See if there are other conversions to do
-    if (Underscore == 0 && SegmentDot == 0 && nsym == 0) return SYMA_NOCHANGE;  // Nothing to do
+    if (Underscore == 0 && SegmentDot == 0 && nsym == 0 && n_prefix_suffix == 0) return SYMA_NOCHANGE;  // Nothing to do
     if (oldname == 0 || *oldname == 0) return SYMA_NOCHANGE;                    // No name
 
     static char NameBuffer[MAXSYMBOLLENGTH];
 
-    SSymbolChange * List = (SSymbolChange *)SymbolList.Buf(), * psym;
     // search for name in list of names specified by user on command line
-    for (isym = 0, psym = List; isym < nsym; isym++, psym++) {
-        if (strcmp(oldname, psym->Name1) == 0) break;  // Matching name found
-        int n1len = (int)strlen(psym->Name1); // Length of string to search for
-        int onlen = (int)strlen(oldname);     // Length of string to match
-        if ((psym->Action&~SYMA_ALIAS) == SYMA_CHANGE_PREFIX && strncmp(oldname, psym->Name1, n1len)==0) break; // matching prefix found
-        if ((psym->Action&~SYMA_ALIAS) == SYMA_CHANGE_SUFFIX && strcmp(oldname+onlen-n1len, psym->Name1)==0) break; // matching suffix found
+    SSymbolChange * psym;
+    int found = SymbolBinSearch(oldname, nsym, &isym);
+    if (found) {
+        psym = (SSymbolChange *)SymbolList.Buf() + isym;
+    } else {
+        // Search prefix/suffix match
+        psym = (SSymbolChange *)PrefixSuffixList.Buf();
+        for (isym = 0; isym < n_prefix_suffix; isym++, psym++) {
+            int n1len = (int)strlen(psym->Name1); // Length of string to search for
+            int onlen = (int)strlen(oldname);     // Length of string to match
+            if ((psym->Action&~SYMA_ALIAS) == SYMA_CHANGE_PREFIX && strncmp(oldname, psym->Name1, n1len)==0) break; // matching prefix found
+            if ((psym->Action&~SYMA_ALIAS) == SYMA_CHANGE_SUFFIX && strcmp(oldname+onlen-n1len, psym->Name1)==0) break; // matching suffix found
+        }
+        found = isym < n_prefix_suffix;
     }
-    if (isym < nsym) {
+
+    if (found) {
         // A matching name was found.
         action = psym->Action;
         // Whatever action is specified here is overriding any general option

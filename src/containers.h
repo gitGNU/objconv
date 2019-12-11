@@ -93,6 +93,7 @@ public:
    CMemoryBuffer();                              // Constructor
    ~CMemoryBuffer();                             // Destructor
    void SetSize(uint32 size);                    // Allocate buffer of specified size
+   void SetDataSize(uint32 size);                // Claim space as a data
    uint32 GetDataSize()  {return DataSize;};     // File data size
    uint32 GetBufferSize(){return BufferSize;};   // Buffer size
    uint32 GetNumEntries(){return NumEntries;};   // Get number of entries

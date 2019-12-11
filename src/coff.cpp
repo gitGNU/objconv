@@ -666,8 +666,7 @@ void CCOFF::PublicNames(CMemoryBuffer * Strings, CSList<SStringEntry> * Index, i
       }
 
       // Search for public symbol
-      if ((Symtab.p->s.SectionNumber > 0 && Symtab.p->s.StorageClass == COFF_CLASS_EXTERNAL) 
-      || Symtab.p->s.StorageClass == COFF_CLASS_ALIAS) {
+      if (Symtab.p->s.SectionNumber > 0 && Symtab.p->s.StorageClass == COFF_CLASS_EXTERNAL) {
          // Public symbol found
          SStringEntry se;
          se.Member = m;

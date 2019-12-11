@@ -1382,9 +1382,11 @@ char * CLibrary::StripMemberName(char * name) {
             p1 = name + i + 1; break;
         }
     }
+    len -= i + 1;
+
     // move to begin of buffer
     if (p1 > name) {
-        strcpy(name, p1);
+        memmove(name, p1, len + 1);
     }
         
     // Get file type
@@ -1409,7 +1411,6 @@ char * CLibrary::StripMemberName(char * name) {
     }
 
     // find extension
-    len = (int)strlen(name);
     for (nlen = len-1; nlen >= 0; nlen--) {
         if (name[nlen] == '.') {
             break;
@@ -1417,7 +1418,6 @@ char * CLibrary::StripMemberName(char * name) {
     }
 
     // Remove any spaces or other illegal characters
-    len = (int)strlen(name);
     for (i = 0; i < nlen; i++) {
         if ((uint8)name[i] <= 0x20 || name[i] == '.') name[i] = '_';
     }
@@ -1567,23 +1567,21 @@ void CLibrary::SortStringTable() {
     SStringEntry * Table = &StringEntries[0];
     // String pointers
     char * s1, * s2;
-    // Temporary record for swapping
-    SStringEntry temp;
 
-    // Simple Bubble sort:
-    int32 i, j;
-    for (i = 0; i < n; i++) {
-        for (j = 0; j < n - i - 1; j++) {
-            s1 = StringBuffer.Buf() + Table[j].String;
-            s2 = StringBuffer.Buf() + Table[j+1].String;
-            if (strcmp(s1, s2) > 0) {
-                // Swap records
-                temp = Table[j];
-                Table[j] = Table[j+1];
-                Table[j+1] = temp;
+    // Simple Shell sort with Sedgewick gaps:
+    int32 i, j, k, gap;
+    for (k = 15; k >= 0; k--) {
+        gap = (1 << 2 * k) | (3 << k >> 1) | 1;  // Sedgewick gap grants O(N^4/3) 
+        for (i = gap; i < n; i++) {
+            SStringEntry key = Table[i];
+            char * strkey = StringBuffer.Buf() + key.String;
+            for (j = i - gap; j >= 0 && strcmp(strkey, StringBuffer.Buf() + Table[j].String) < 0; j -= gap) {
+                Table[j + gap] = Table[j];
             }
+            Table[j + gap] = key;
         }
     }
+
     // Now StringEntries has been sorted. Reorder StringBuffer to the sort order.
     CMemoryBuffer SortedStringBuffer;    // Temporary buffer for strings in sort order
     for (i = 0; i < n; i++) {
@@ -2085,7 +2083,7 @@ const char * CLibrary::GetModuleName(uint32 Index) {
                 // Long name in longnames record
                 uint32 NameIndex = atoi(name+1);
                 if (NameIndex < LongNamesSize) {
-                    return Buf() + LongNames + NameIndex;
+                    return LongNamesBuffer.Buf() + NameIndex;
                 }
                 else {
                     return "?";
