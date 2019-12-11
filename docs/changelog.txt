@@ -1,3 +1,9 @@
+2018-10-08 version 2.51
+* fix bug in movq mm0,rax
+
+2018-08-15 version 2.50
+* minor change in omf2cof
+
 2018-01-29 version 2.49
 * fixed minor problem with disassembly of DLL
 
