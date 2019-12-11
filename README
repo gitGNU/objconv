@@ -6,9 +6,10 @@ This utility can be used for converting object files between COFF/PE, OMF, ELF a
 Web : http://www.agner.org/optimize/#objconv
 Manual : http://www.agner.org/optimize/objconv-instructions.pdf
 
-Source File: http://www.agner.org/optimize/objconv.zip
+Original Source File: http://www.agner.org/optimize/objconv.zip  ( Not the same as the source on branch )
 File name: objconv.zip, size: 1033406, last modified: 2018-Oct-07.
 
+Patched Applied on 2019-Oct-28.
 
 Author : Agner Fog, Ph.D.
 E-mail : agner@agner.org
