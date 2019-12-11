@@ -1,3 +1,11 @@
+2019-10-25 version 2.52
+*Used objconv to rename ~20K symbols in a library with about 200K symbols. 
+* Have fixed few minor but obvious problems:
+- nm show empty symbol, if it have forbidden zero index in Mach-O
+- Error messages buffer overrun, bad formatting, and wrong symbol names output
+* Sorting changed to faster Shell sort, and binary search used on symbols list.
+- Originally using bubble sort and linear search, replacement took very long time (waited for hour w/o result)
+
 2018-10-08 version 2.51
 * fix bug in movq mm0,rax
 
