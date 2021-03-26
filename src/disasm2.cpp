@@ -504,7 +504,7 @@ void CDisassembler::WriteOperandTypeYASM(uint32 type) {
     case 4:  // 64 bits
         OutFile.Put("qword ");  break;
     case 5:  // 80 bits
-        OutFile.Put("tbyte ");  break;
+        OutFile.Put("tword ");  break;
     case 7:  // 48 bits
         OutFile.Put("fword ");  break;
     case 0x4A: // 16 bits float
@@ -516,7 +516,7 @@ void CDisassembler::WriteOperandTypeYASM(uint32 type) {
     case 0x4C: // 64 bits float (SSE2)
         OutFile.Put("qword ");  break;
     case 0x45: // 80 bits float
-        OutFile.Put("tbyte ");  break;
+        OutFile.Put("tword ");  break;
     case 0x84: case 0x85: // far call
         OutFile.Put("far ");  break;
     case 0x95: // 16 bits mask register
