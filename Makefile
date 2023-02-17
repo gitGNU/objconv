@@ -1,6 +1,6 @@
 # the "invention" Makefile for `objconv' compilation with gcc
 
-SRCS = *.cpp
+SRCS = src/*.cpp
 OBJS = $(shell ls ${SRCS} | sed -e 's/\.cpp/.o/')
 
 DEBUG =
